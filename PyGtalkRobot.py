@@ -122,7 +122,7 @@ class GtalkRobot:
         ibb = xmpp.filetransfer.IBB()
         ibb.PlugIn(self.conn)
         f = open(filepath)
-        ibb.OpenStream('attachment', jid+'/resource', f)
+        ibb.OpenStream('attachment', jid.getStripped()+'/resource', f)
  
     ########################################################################################################################
     def initCommands(self):

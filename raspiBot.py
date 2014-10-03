@@ -110,9 +110,13 @@ class RaspiBot(GtalkRobot):
         pin_value = GPIO.input(int(pin_num))
         self.replyMessage(user, "\nPin read: "+ pin_num + " value: " + str(pin_value) + " at: "+time.strftime("%Y-%m-%d %a %H:%M:%S", time.localtime()))
     
+    def command_003_say(self, user, message, args):
+	cmd = "/opt/vc/bin/raspistill -o "+path+" "
+        output = "raspistill executed. output: "
+        self.replyMessage(user, message)
+    
     #This takes a picture with the camera and send it
     def command_003_picture(self, user, message, args):
-        '''(shell|bash)( +(.*))?$(?i)'''
         path='/tmp/picture.jpeg'
 	cmd = "/opt/vc/bin/raspistill -o "+path+" "
         p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
