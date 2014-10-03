@@ -114,6 +114,10 @@ class RaspiBot(GtalkRobot):
         '''(say)( +(.*))?$(?i)'''
         self.replyMessage(user, ''.join(args[1]))
     
+    def command_003_status(self, user, message, args):
+        '''(status)( +(.*))?$(?i)'''
+        self.replyMessage(user, self.system_status(user))
+    
     #This takes a picture with the camera and send it
     def command_003_picture(self, user, message, args):
         '''(photo)( +(.*))?$(?i)'''
@@ -125,14 +129,22 @@ class RaspiBot(GtalkRobot):
             par=' '+''.join(args[1])
 
 	cmd = "/opt/vc/bin/raspistill -o "+path+par
-        p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        output = "raspistill executed. output: "
-        for line in p.stdout.readlines():
-            output += line
-            print line,
-        retval = p.wait()
-        self.replyMessage(user, output +" at: "+time.strftime("%Y-%m-%d %a %H:%M:%S", time.localtime()))
-        self.send_file(user, path)
+        p = subprocess.Popen(\
+            cmd, shell=True, \
+            stdout=subprocess.PIPE, \
+            stderr=subprocess.STDOUT)
+        
+        self.replyMessage(user, "raspistill executed.")
+        #self.send_file(user, path)
+        
+        account={}
+        account['username']=BOT_GTALK_USER
+        account['password']=BOT_GTALK_PASS
+        account['admin']=BOT_ADMIN
+        
+        self.send_file_byemail(user, path, account)
+        self.replyMessage(user, "data sent by email.")
+        
     
     #This executes the shell command argument after 'shell' or 'bash'
     def command_003_shell(self, user, message, args):
@@ -148,6 +160,12 @@ class RaspiBot(GtalkRobot):
             print line,
         retval = p.wait()
         self.replyMessage(user, output +" at: "+time.strftime("%Y-%m-%d %a %H:%M:%S", time.localtime()))
+    
+    def command_003_shutdown(self, user, message, args):
+        '''(shutdown|halt|poweroff)( +(.*))?$(?i)'''
+        self.replyMessage(user, "I'm gonna go to sleep now!")
+        p = subprocess.Popen("sudo /usr/sbin/shutdown -h now", shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        retval = p.wait()
     
     #This method is the default response
     def command_100_default(self, user, message, args):

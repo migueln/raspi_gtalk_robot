@@ -116,7 +116,51 @@ class GtalkRobot:
     def authorize(self, jid):
         """ Authorise JID 'jid'. Works only if these JID requested auth previously. """
         self.getRoster().Authorize(jid)
-   
+  
+    def system_status(self, jid):
+        from datetime import timedelta
+        import socket
+        import urllib2
+
+        # System temperature
+        with open("/sys/class/thermal/thermal_zone0/temp") as Te:
+            Te = float(Te.read()[:-1])/1000.0
+            temp_string = str("Temperature: %.1f C" %(Te))
+        
+        # Uptime
+        with open('/proc/uptime', 'r') as f:
+            uptime_seconds = float(f.readline().split()[0])
+            uptime_string = str(timedelta(seconds = uptime_seconds))
+            uptime_string = str("Uptime: %s "%(uptime_string.split('.')[0]))
+        
+        with open('/proc/meminfo', 'r') as f:
+            fr = f.readlines()
+            MemTotal  = float(fr[0].split(':')[-1].split('kB')[0].replace(' ',''))
+            MemFree   = float(fr[1].split(':')[-1].split('kB')[0].replace(' ',''))
+            MemBuffer = float(fr[2].split(':')[-1].split('kB')[0].replace(' ',''))
+            MemCached = float(fr[3].split(':')[-1].split('kB')[0].replace(' ',''))
+
+            MemUsed = MemTotal-MemFree-MemBuffer-MemCached
+            mem_string = str("Used memory: %d/%d mb" %(0.001*MemUsed,0.001*MemTotal))
+
+        private_ip = [(s.connect(('8.8.8.8', 80)), s.getsockname()[0], s.close())\
+            for s in [socket.socket(socket.AF_INET,socket.SOCK_DGRAM)]][0][1]
+        
+        public_ip  = urllib2.urlopen('http://ip.42.pl/raw').read()
+
+        publicip_string = str("Public IP: %s" %public_ip)
+        privateip_string = str("Private IP: %s" %private_ip)
+
+        Summary = '\n'.join([\
+            "System Status: ",\
+            temp_string,\
+            uptime_string,\
+            mem_string,\
+            privateip_string,\
+            publicip_string])
+
+        return(Summary)
+        
 
     def send_file(self, jid, filepath):
         ibb = xmpp.filetransfer.IBB()
@@ -129,7 +173,34 @@ class GtalkRobot:
         print('File: '+filepath)
 
         ibb.OpenStream(jid.getNode(), jid.getStripped()+'/resource', f)
- 
+  
+    def send_file_byemail(self, jid, filepath, account):
+        import smtplib
+        from email.mime.multipart import MIMEMultipart
+        from email.mime.text import MIMEText        
+
+        msg = MIMEMultipart('alternative')
+        s = smtplib.SMTP('smtp.gmail.com', 587)
+        
+        s.ehlo()
+        s.starttls()
+        s.ehlo()
+        
+        s.login(account['username'], account['password'])
+        msg['Subject'] = 'Here you have the image'
+        msg['From'] = account['username']
+        body = 'Please, see in the attatchments the image'
+        content = MIMEText(body, 'plain')
+        msg.attach(content)
+
+        f = file(filepath)
+        attachment = MIMEText(f.read())
+        attachment.add_header('Content-Disposition', 'attachment', filename=filepath)
+        msg.attach(attachment)
+        
+        s.sendmail(account['username'],account['admin'],msg.as_string())
+
+
     ########################################################################################################################
     def initCommands(self):
         if self.commands:
