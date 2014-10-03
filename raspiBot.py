@@ -34,9 +34,9 @@ from PyGtalkRobot import GtalkRobot
 config = ConfigParser.ConfigParser()
 config.read(path.expanduser("~")+"/.gtalk_robot")
 
-BOT_GTALK_USER = config.get(username)
-BOT_GTALK_PASS = config.get(password)
-BOT_ADMIN = config.get(admin)
+BOT_GTALK_USER = config.get("gtalk_robot","username")
+BOT_GTALK_PASS = config.get("gtalk_robot","password")
+BOT_ADMIN = config.get("gtalk_robot","admin")
 
 GPIO.setmode(GPIO.BOARD) # or GPIO.setmode(GPIO.BCM)
 ############################################################################################################################
