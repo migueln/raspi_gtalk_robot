@@ -111,14 +111,20 @@ class RaspiBot(GtalkRobot):
         self.replyMessage(user, "\nPin read: "+ pin_num + " value: " + str(pin_value) + " at: "+time.strftime("%Y-%m-%d %a %H:%M:%S", time.localtime()))
     
     def command_003_say(self, user, message, args):
-	cmd = "/opt/vc/bin/raspistill -o "+path+" "
-        output = "raspistill executed. output: "
-        self.replyMessage(user, message)
+        '''(say)( +(.*))?$(?i)'''
+        self.replyMessage(user, ''.join(args[1]))
     
     #This takes a picture with the camera and send it
     def command_003_picture(self, user, message, args):
+        '''(photo)( +(.*))?$(?i)'''
         path='/tmp/picture.jpeg'
-	cmd = "/opt/vc/bin/raspistill -o "+path+" "
+
+        if (args[1]==None):
+            par=''
+        else:
+            par=' '+''.join(args[1])
+
+	cmd = "/opt/vc/bin/raspistill -o "+path+par
         p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         output = "raspistill executed. output: "
         for line in p.stdout.readlines():
@@ -132,6 +138,9 @@ class RaspiBot(GtalkRobot):
     def command_003_shell(self, user, message, args):
         '''(shell|bash)( +(.*))?$(?i)'''
         cmd = args[1]
+        if (cmd==None):
+            self.replyMessage(user, "You're not allowed to do this!")
+        
         p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         output = ""
         for line in p.stdout.readlines():
