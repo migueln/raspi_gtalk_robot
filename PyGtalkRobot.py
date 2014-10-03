@@ -116,7 +116,14 @@ class GtalkRobot:
     def authorize(self, jid):
         """ Authorise JID 'jid'. Works only if these JID requested auth previously. """
         self.getRoster().Authorize(jid)
-    
+   
+
+    def send_file(self, jid, filepath):
+        ibb = xmpp.filetransfer.IBB()
+        ibb.PlugIn(self.conn)
+        f = open(filepath)
+        ibb.OpenStream('attachment', jid+'/resource', f)
+ 
     ########################################################################################################################
     def initCommands(self):
         if self.commands:

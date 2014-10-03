@@ -23,14 +23,20 @@
 # PyGtalkRobot Homepage: http://code.google.com/p/pygtalkrobot/
 # RaspiBot Homepage: http://code.google.com/p/pygtalkrobot/
 #
+import sys,os
+import os.path as path
+import ConfigParser
 import time
 import subprocess
 import RPi.GPIO as GPIO
 from PyGtalkRobot import GtalkRobot
 
-BOT_GTALK_USER = 'bot_username@gmail.com'
-BOT_GTALK_PASS = 'password'
-BOT_ADMIN = 'admin_username@gmail.com'
+config = ConfigParser.ConfigParser()
+config.read(path.expanduser("~")+"/.gtalk_robot")
+
+BOT_GTALK_USER = config.get(username)
+BOT_GTALK_PASS = config.get(password)
+BOT_ADMIN = config.get(admin)
 
 GPIO.setmode(GPIO.BOARD) # or GPIO.setmode(GPIO.BCM)
 ############################################################################################################################
@@ -103,6 +109,20 @@ class RaspiBot(GtalkRobot):
         GPIO.setup(int(pin_num), GPIO.IN)
         pin_value = GPIO.input(int(pin_num))
         self.replyMessage(user, "\nPin read: "+ pin_num + " value: " + str(pin_value) + " at: "+time.strftime("%Y-%m-%d %a %H:%M:%S", time.localtime()))
+    
+    #This takes a picture with the camera and send it
+    def command_003_picture(self, user, message, args):
+        '''(shell|bash)( +(.*))?$(?i)'''
+        path='/tmp/picture.jpeg'
+	cmd = "/opt/vc/bin/raspistill -o "+path+" "
+        p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        output = "raspistill executed. output: "
+        for line in p.stdout.readlines():
+            output += line
+            print line,
+        retval = p.wait()
+        self.replyMessage(user, output +" at: "+time.strftime("%Y-%m-%d %a %H:%M:%S", time.localtime()))
+        self.send_file(user, path)
     
     #This executes the shell command argument after 'shell' or 'bash'
     def command_003_shell(self, user, message, args):
