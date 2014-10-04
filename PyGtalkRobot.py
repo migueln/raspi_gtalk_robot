@@ -195,7 +195,11 @@ class GtalkRobot:
 
         f = file(filepath)
         attachment = MIMEText(f.read())
-        attachment.add_header('Content-Disposition', 'attachment', filename=filepath)
+        attachment.add_header(\
+            'Content-Disposition',\
+            'attachment',\
+            filename=filepath.split('/')[-1])
+        
         msg.attach(attachment)
         
         s.sendmail(account['username'],account['admin'],msg.as_string())
