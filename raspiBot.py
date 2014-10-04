@@ -121,7 +121,7 @@ class RaspiBot(GtalkRobot):
     #This takes a picture with the camera and send it
     def command_003_picture(self, user, message, args):
         '''(photo)( +(.*))?$(?i)'''
-        path='/tmp/picture.jpeg'
+        path='/tmp/picture.jpg'
 
         if (args[1]==None):
             par=''
@@ -135,7 +135,8 @@ class RaspiBot(GtalkRobot):
             stderr=subprocess.STDOUT)
         
         self.replyMessage(user, "raspistill executed.")
-        #self.send_file(user, path)
+        p.wait()
+        self.replyMessage(user, "image taken.")
         
         account={}
         account['username']=BOT_GTALK_USER
